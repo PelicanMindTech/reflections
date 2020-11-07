@@ -303,6 +303,23 @@ class JournallingStore(val context: Context) {
         return file
     }
 
+    fun listGoodEntries(): List<Int> {
+        var i = 0
+        val res = ArrayList<Int>()
+        while (true) {
+            Log.i("HELLO", "HELLO")
+            val file = getEntryFile(i)
+            val humorFile = getHumorFile(i)
+            if (file.exists() && humorFile.exists())
+                res.add(i)
+            if (!file.parentFile.exists() || i >= 1000) {
+                break
+            }
+            i++
+        }
+        return res
+    }
+
     companion object {
         val CLOUD_VISION_API_KEY = "<insert cloud vision key here>"
         val ANDROID_CERT_HEADER = "X-Android-Cert";
