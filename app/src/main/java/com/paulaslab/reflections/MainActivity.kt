@@ -23,6 +23,10 @@ import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Observer
+
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -31,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
+    private lateinit var wordViewModel: WordViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,32 @@ class MainActivity : AppCompatActivity() {
             )
             startCamera()
         }
+
+        // Martin db test start
+        // Get a new or existing ViewModel from the ViewModelProvider.
+        wordViewModel = ViewModelProvider(this).get(WordViewModel::class.java)
+        var allWords = wordViewModel.allWords
+        val TAG = "Martintest"
+        Log.i(TAG,"Start: ")
+        Log.i(TAG, allWords.toString())
+        val word = Word("Hello2")
+
+        val wordObserver = Observer<List<Word>> { newName ->
+            // Update the UI, in this case, a TextView.
+            Log.i(TAG, "Change")
+            Log.i(TAG, newName.toString())
+        }
+
+        allWords.observe(this, wordObserver)
+
+        Log.i(TAG,"Inserting ")
+
+        wordViewModel.insert(word)
+//        Log.i(TAG, "Finish repo: ")
+//
+//        allWords = wordViewModel.allWords
+//        Log.i(TAG, allWords.toString())
+        // Martin db test finish
 
         outputDirectory = getOutputDirectory()
 
@@ -99,8 +130,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
             }
-            val file = File(getOutputDirectory(), "film")
-            videoCapture.startRecording(file, cameraExecutor, obj)
+//            val file = File(getOutputDirectory(), "film")
+//            videoCapture.startRecording(file, cameraExecutor, obj)
         }, executor)
     }
 
