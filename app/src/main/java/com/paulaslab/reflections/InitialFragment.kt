@@ -22,7 +22,7 @@ class InitialFragment : Fragment() {
     ): View? {
 
         val fragmentManager = this.parentFragmentManager
-        val journallingFragment = JournallingFragment.newInstance()
+        val journallingFragment = JournallingFragment.newInstance(this)
 
         val view = inflater.inflate(R.layout.fragment_initial, container, false)
         view?.findViewById<Button>(R.id.start_journalling_button)?.setOnTouchListener(

@@ -1,19 +1,20 @@
 package com.paulaslab.reflections
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_journalling.*
+import androidx.fragment.app.FragmentTransaction
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Use the [JournallingFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class JournallingFragment : Fragment() {
+class JournallingFragment(val previousFragment: Fragment) : Fragment() {
 
     private var ttsInitialized : AtomicBoolean = AtomicBoolean(false)
     private var tts: TextToSpeech? = null
@@ -33,9 +34,19 @@ class JournallingFragment : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
+    fun endJournalEntry() {
+        currentQuestion = -1
+        val fragmentManager = this.parentFragmentManager
+
+        val ft: FragmentTransaction = fragmentManager.beginTransaction()
+
+        ft.replace(R.id.flContainer, previousFragment)
+        ft.commit()
+    }
+
     fun nextQuestion() {
         if (!ttsInitialized.get()) return
-
+        if (currentQuestion == QUESTIONS.size - 1) return
         currentQuestion++
         val question = QUESTIONS[currentQuestion]
         tts!!.speak(question, TextToSpeech.QUEUE_ADD, null, "question-${currentQuestion}")
@@ -47,7 +58,24 @@ class JournallingFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_journalling, container, false)
         startCamera()
-        val t = this
+
+        view.findViewById<Button>(R.id.next_question_button).setOnTouchListener(View.OnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_UP -> {
+                    if (currentQuestion == QUESTIONS.size - 1) {
+                        endJournalEntry()
+                    }
+                    nextQuestion()
+                    if (currentQuestion == QUESTIONS.size - 1) {
+                        val b : Button = v as Button
+                        b.setBackgroundColor(Color.RED)
+                        b.setText("End journal")
+                    }
+                }
+            }
+            false
+        })
+
         tts = TextToSpeech(context!!, TextToSpeech.OnInitListener {
                 status ->
                     when (status) {
@@ -77,11 +105,12 @@ class JournallingFragment : Fragment() {
             //    setAudioRecordSource(1)
             //}.build()
 
+            val viewFinder = getView()?.findViewById<PreviewView>(R.id.viewFinder)
             // Preview
             val preview = Preview.Builder()
                 .build()
                 .also {
-                    it.setSurfaceProvider(viewFinder.createSurfaceProvider())
+                    it.setSurfaceProvider(viewFinder?.createSurfaceProvider())
                 }
 
             // Select back camera as a default
@@ -120,9 +149,9 @@ class JournallingFragment : Fragment() {
         val QUESTIONS = arrayOf(
             "How are you today?",
             "What is your favorite color?",
-            "Which is fastest: an american or an european swallow?"
+            "Which is fastest: an american or a european swallow?"
         )
         @JvmStatic
-        fun newInstance() = JournallingFragment()
+        fun newInstance(previousFragment: Fragment) = JournallingFragment(previousFragment)
     }
 }
