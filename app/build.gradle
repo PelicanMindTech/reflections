@@ -35,6 +35,12 @@ android {
 
 def camerax_version = "1.0.0-beta07"
 
+ext {
+    exoplayer_version = "2.7.0"
+    supportlib_version = "27.1.0"
+    anko_version = "0.10.4"
+}
+
 android {
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
@@ -68,6 +74,17 @@ dependencies {
     implementation 'com.google.apis:google-api-services-vision:v1-rev369-1.23.0'
     implementation 'com.google.api-client:google-api-client-android:1.30.11' exclude module: 'httpclient'
     implementation 'com.google.http-client:google-http-client-gson:1.23.0' exclude module: 'httpclient'
+
+    // Dependencies for video player
+    implementation "com.google.android.exoplayer:exoplayer:$exoplayer_version"
+    implementation "com.google.android.exoplayer:exoplayer-core:$exoplayer_version"
+    implementation "com.google.android.exoplayer:exoplayer-ui:$exoplayer_version"
+    implementation "com.google.android.exoplayer:extension-mediasession:$exoplayer_version"
+    implementation 'com.android.support:support-annotations:28.0.0'
+    implementation "com.android.support:design:$supportlib_version"
+    implementation "com.android.support:appcompat-v7:$supportlib_version"
+    implementation "com.android.support:support-v4:$supportlib_version"
+    implementation "org.jetbrains.anko:anko:$anko_version"
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
