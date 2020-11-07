@@ -20,17 +20,20 @@ class InitialFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         val fragmentManager = this.parentFragmentManager
-        val journallingFragment = JournallingFragment.newInstance(this)
+        val app = activity?.application as ReflectionsApp
+        app.journalStore?.listFiles()
+        val file = app.journalStore!!.newEntryFile()
+
+        val journallingFragment = JournallingFragment.newInstance(this, file)
 
         val view = inflater.inflate(R.layout.fragment_initial, container, false)
+
         view?.findViewById<Button>(R.id.start_journalling_button)?.setOnTouchListener(
             View.OnTouchListener { view, motionEvent ->
                 when (motionEvent.action) {
                     MotionEvent.ACTION_UP -> {
                         val ft: FragmentTransaction = fragmentManager.beginTransaction()
-
                         ft.replace(R.id.flContainer, journallingFragment)
                         ft.commit()
                     }

@@ -1,8 +1,14 @@
 package com.paulaslab.reflections
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.*
@@ -11,11 +17,15 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
+import androidx.camera.core.VideoCapture
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentTransaction
+import java.io.File
 import java.util.*
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -23,25 +33,26 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Use the [JournallingFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class JournallingFragment(val previousFragment: Fragment) : Fragment() {
+class JournallingFragment(val previousFragment: Fragment, val filmFile: File) : Fragment() {
 
-    private var ttsInitialized : AtomicBoolean = AtomicBoolean(false)
+    private val ttsInitialized : AtomicBoolean = AtomicBoolean(false)
     private var tts: TextToSpeech? = null
 
+    private var videoCapture: VideoCapture? = null
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var cameraExecutor: Executor? = null
     private var currentQuestion = -1
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
+    @SuppressLint("RestrictedApi")
     fun endJournalEntry() {
         currentQuestion = -1
-        val fragmentManager = this.parentFragmentManager
+        videoCapture?.stopRecording()
+        //cameraProvider?.unbindAll()
 
-        val ft: FragmentTransaction = fragmentManager.beginTransaction()
-
-        ft.replace(R.id.flContainer, previousFragment)
-        ft.commit()
     }
 
     fun nextQuestion() {
@@ -64,12 +75,13 @@ class JournallingFragment(val previousFragment: Fragment) : Fragment() {
                 MotionEvent.ACTION_UP -> {
                     if (currentQuestion == QUESTIONS.size - 1) {
                         endJournalEntry()
-                    }
-                    nextQuestion()
-                    if (currentQuestion == QUESTIONS.size - 1) {
-                        val b : Button = v as Button
-                        b.setBackgroundColor(Color.RED)
-                        b.setText("End journal")
+                    } else {
+                        nextQuestion()
+                        if (currentQuestion == QUESTIONS.size - 1) {
+                            val b: Button = v as Button
+                            b.setBackgroundColor(Color.RED)
+                            b.setText("End entry")
+                        }
                     }
                 }
             }
@@ -80,7 +92,7 @@ class JournallingFragment(val previousFragment: Fragment) : Fragment() {
                 status ->
                     when (status) {
                         TextToSpeech.SUCCESS -> {
-                            tts!!.setLanguage(Locale.CANADA)
+                            tts!!.setLanguage(Locale.FRENCH)
                             ttsInitialized.set(true)
                             this@JournallingFragment.nextQuestion()
                         }
@@ -96,14 +108,13 @@ class JournallingFragment(val previousFragment: Fragment) : Fragment() {
 
         val executor = ContextCompat.getMainExecutor(context!!)
 
-        Log.e("PreviewView", executor.toString())
+
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            cameraProvider = cameraProviderFuture.get()
 
-            //val videoCapture = VideoCapture.Builder().apply {
-            //    setAudioRecordSource(1)
-            //}.build()
+
+            videoCapture = VideoCapture.Builder().build()
 
             val viewFinder = getView()?.findViewById<PreviewView>(R.id.viewFinder)
             // Preview
@@ -118,40 +129,59 @@ class JournallingFragment(val previousFragment: Fragment) : Fragment() {
 
             try {
                 // Unbind use cases before rebinding
-                cameraProvider.unbindAll()
+                cameraProvider?.unbindAll()
 
-                //cameraProvider.bindToLifecycle(this, cameraSelector, videoCapture)
+                cameraProvider?.bindToLifecycle(this, cameraSelector, videoCapture)
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview)
+                cameraProvider?.bindToLifecycle(this, cameraSelector, preview)
             } catch (exc: Exception) {
                 Log.e("JournallingFragment", "Use case binding failed", exc)
             }
 
-//            val obj = object : OnVideoSavedCallback {
-//                override fun onVideoSaved(file: File) {
-//                    //TODO("Not yet implemented")
-//                }
-//
-//                override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-//                    //TODO("Not yet implemented")
-//                }
-//
-//            }
-//            val file = File(getOutputDirectory(), "film")
-//            videoCapture.startRecording(file, cameraExecutor, obj)
+            val obj = object : VideoCapture.OnVideoSavedCallback {
+                override fun onVideoSaved(file: File) {
+                    Log.i("FILMSAVE", "Film saved")
+
+                    val fragmentManager = parentFragmentManager
+
+                    val ft: FragmentTransaction = fragmentManager.beginTransaction()
+
+                    ft.replace(R.id.flContainer, previousFragment)
+                    ft.commit()
+                }
+
+                override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
+                    Log.i("FILMSAVE", "File save file: ${message} ${cause}")
+                }
+
+            }
+            videoCapture?.startRecording(filmFile, cameraExecutor!!, obj)
         }, executor)
     }
 
+    @SuppressLint("RestrictedApi")
+    override fun onPause() {
+
+        Log.i("SAVINGFILE", "Destroying")
+        //cameraProvider?.unbindAll()
+        //videoCapture?.stopRecording()
+        super.onPause()
+    }
+
+    @SuppressLint("RestrictedApi")
     override fun onDestroy() {
+        Log.i("SAVINGFILE", "Destroying")
+        //videoCapture?.stopRecording()
+        //cameraProvider?.unbindAll()
         super.onDestroy()
     }
     companion object {
         val QUESTIONS = arrayOf(
             "How are you today?",
             "What is your favorite color?",
-            "Which is fastest: an american or a european swallow?"
+            "Which is fastest: an african or a european swallow?"
         )
         @JvmStatic
-        fun newInstance(previousFragment: Fragment) = JournallingFragment(previousFragment)
+        fun newInstance(previousFragment: Fragment, file: File) = JournallingFragment(previousFragment, file)
     }
 }

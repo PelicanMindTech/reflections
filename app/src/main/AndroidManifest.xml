@@ -10,8 +10,10 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-feature android:name="android.hardware.microphone" android:required="false"/>
     <uses-permission android:name="android.permission.USE_PERIPHERAL_IO" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
+        android:name=".ReflectionsApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
