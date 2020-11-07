@@ -15,6 +15,10 @@ class DiaryEntryRow(val context: Context, val data: JournallingStore) : Recycler
     private var mInflater: LayoutInflater = LayoutInflater.from(context)
     private var goodData = data.listGoodEntries()
 
+    fun updateIt() {
+        goodData = data.listGoodEntries()
+        notifyDataSetChanged()
+    }
     // stores and recycles views as they are scrolled off screen
     class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView),
         View.OnClickListener {

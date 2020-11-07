@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Use the [JournallingFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class JournallingFragment(val previousFragment: Fragment, val filmFile: File, val idEntry: Int) : Fragment() {
+class JournallingFragment(val previousFragment: Fragment, val filmFile: File, val idEntry: Int, val onUpdate: () -> Unit) : Fragment() {
 
     private val ttsInitialized : AtomicBoolean = AtomicBoolean(false)
     private var tts: TextToSpeech? = null
@@ -108,6 +108,7 @@ class JournallingFragment(val previousFragment: Fragment, val filmFile: File, va
 
         val executor = ContextCompat.getMainExecutor(context!!)
 
+        val handler = Handler(context!!.mainLooper)
 
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -139,6 +140,7 @@ class JournallingFragment(val previousFragment: Fragment, val filmFile: File, va
             }
 
             val obj = object : VideoCapture.OnVideoSavedCallback {
+                @SuppressLint("UseRequireInsteadOfGet")
                 override fun onVideoSaved(file: File) {
                     Log.i("FILMSAVE", "Film saved")
 
@@ -151,6 +153,7 @@ class JournallingFragment(val previousFragment: Fragment, val filmFile: File, va
 
                     val app = activity?.application!! as ReflectionsApp
                     app.journalStore?.extractFaces(idEntry)
+                    onUpdate()
                 }
 
                 override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
@@ -185,6 +188,7 @@ class JournallingFragment(val previousFragment: Fragment, val filmFile: File, va
             "Which is fastest: an african or a european swallow?"
         )
         @JvmStatic
-        fun newInstance(previousFragment: Fragment, file: File, id: Int) = JournallingFragment(previousFragment, file, id)
+        fun newInstance(previousFragment: Fragment, file: File, id: Int, onUpdate: () -> Unit) =
+            JournallingFragment(previousFragment, file, id, onUpdate)
     }
 }

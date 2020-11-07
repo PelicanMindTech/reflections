@@ -1,6 +1,9 @@
 package com.paulaslab.reflections
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -18,6 +21,9 @@ import androidx.recyclerview.widget.RecyclerView
  * create an instance of this fragment.
  */
 class InitialFragment : Fragment() {
+    var recyclerView: RecyclerView? = null
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,7 +34,25 @@ class InitialFragment : Fragment() {
         val file = app.journalStore!!.getEntryFile(id)
 
         app.journalStore!!.getEntryFile(0)
-        val journallingFragment = JournallingFragment.newInstance(this, file, id)
+        val handler = Handler(context!!.mainLooper)
+        val journallingFragment = JournallingFragment.newInstance(
+            this,
+            file,
+            id,
+            {
+                val pos = app.journalStore!!.listGoodEntries()
+
+
+                Log.i("Recycler", "Add item: ${pos[pos.size - 1]}")
+                handler.post(Runnable {
+                    val adapter = getView()?.findViewById<RecyclerView>(R.id.diary_entry_container)?.adapter
+                    Log.i("HELLO", "Here and dataset changed: ${adapter}")
+                    if (adapter != null) {
+                        (adapter as DiaryEntryRow).updateIt()
+                    }
+                })
+            }
+        )
 
         val view = inflater.inflate(R.layout.fragment_initial, container, false)
 
@@ -45,10 +69,10 @@ class InitialFragment : Fragment() {
             })
 
         // set up the RecyclerView
-        val recyclerView: RecyclerView = view.findViewById<RecyclerView>(R.id.diary_entry_container)
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView = view.findViewById<RecyclerView>(R.id.diary_entry_container)
+        recyclerView?.layoutManager = LinearLayoutManager(context)
         val adapter = DiaryEntryRow(context!!, app.journalStore!!)
-        recyclerView.adapter = adapter
+        recyclerView?.adapter = adapter
 
         return view
     }
