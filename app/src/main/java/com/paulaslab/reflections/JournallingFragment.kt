@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Use the [JournallingFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class JournallingFragment(val previousFragment: Fragment, val filmFile: File) : Fragment() {
+class JournallingFragment(val previousFragment: Fragment, val filmFile: File, val idEntry: Int) : Fragment() {
 
     private val ttsInitialized : AtomicBoolean = AtomicBoolean(false)
     private var tts: TextToSpeech? = null
@@ -148,6 +148,9 @@ class JournallingFragment(val previousFragment: Fragment, val filmFile: File) : 
 
                     ft.replace(R.id.flContainer, previousFragment)
                     ft.commit()
+
+                    val app = activity?.application!! as ReflectionsApp
+                    app.journalStore?.extractFaces(idEntry)
                 }
 
                 override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
@@ -182,6 +185,6 @@ class JournallingFragment(val previousFragment: Fragment, val filmFile: File) : 
             "Which is fastest: an african or a european swallow?"
         )
         @JvmStatic
-        fun newInstance(previousFragment: Fragment, file: File) = JournallingFragment(previousFragment, file)
+        fun newInstance(previousFragment: Fragment, file: File, id: Int) = JournallingFragment(previousFragment, file, id)
     }
 }

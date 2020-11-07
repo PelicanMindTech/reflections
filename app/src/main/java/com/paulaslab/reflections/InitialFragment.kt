@@ -22,10 +22,10 @@ class InitialFragment : Fragment() {
     ): View? {
         val fragmentManager = this.parentFragmentManager
         val app = activity?.application as ReflectionsApp
-        app.journalStore?.listFiles()
-        val file = app.journalStore!!.newEntryFile()
+        val id = app.journalStore!!.newEntryId()
+        val file = app.journalStore!!.getEntryFile(id)
 
-        val journallingFragment = JournallingFragment.newInstance(this, file)
+        val journallingFragment = JournallingFragment.newInstance(this, file, id)
 
         val view = inflater.inflate(R.layout.fragment_initial, container, false)
 
