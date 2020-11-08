@@ -16,7 +16,7 @@
         android:id="@+id/diary_entry_container"
         android:layout_width="match_parent"
         android:layout_height="319dp"
-        android:translationY="100dp" />
+        android:translationY="50dp" />
     
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/exoplayerview_activity_video"
@@ -27,8 +27,8 @@
         show_timeout="5000"
         use_artwork="true"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="50dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="375dp"
         android:isScrollContainer="true"
-        android:translationY="400dp" />
+        />
 </FrameLayout>

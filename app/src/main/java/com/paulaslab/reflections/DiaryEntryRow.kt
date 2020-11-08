@@ -25,6 +25,7 @@ class DiaryEntryRow(val context: Context, val data: JournallingStore, val playVi
         View.OnClickListener {
         var onClick: () -> Unit = {}
         var myTextView: TextView
+        var colorView: TextView
 
         override fun onClick(view: View?) {
             onClick()
@@ -32,6 +33,7 @@ class DiaryEntryRow(val context: Context, val data: JournallingStore, val playVi
 
         init {
             myTextView = itemView.findViewById<TextView>(R.id.diary_entry_label)
+            colorView = itemView.findViewById<TextView>(R.id.diary_entry_color)
             itemView.setOnClickListener(this)
         }
     }
@@ -45,8 +47,10 @@ class DiaryEntryRow(val context: Context, val data: JournallingStore, val playVi
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val id = goodData[position]
         val humor = data.extractHumor(id)?.getScore()
-        holder.myTextView.setText("Diary entry: $id")
-        val l = holder.myTextView.parent as LinearLayout
+        holder.myTextView.setText("Diary entry # $id")
+        holder.colorView.setText("$humor")
+
+        val l = holder.colorView
         l.setBackgroundColor(
             Color.argb(100, 0,
                 kotlin.math.max(humor!! * 20, 0f).toInt(),
