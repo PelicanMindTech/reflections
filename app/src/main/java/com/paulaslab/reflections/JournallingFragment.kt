@@ -92,7 +92,7 @@ class JournallingFragment(val previousFragment: Fragment, val filmFile: File, va
                 status ->
                     when (status) {
                         TextToSpeech.SUCCESS -> {
-                            tts!!.setLanguage(Locale.FRENCH)
+                            tts!!.setLanguage(Locale.ENGLISH)
                             ttsInitialized.set(true)
                             this@JournallingFragment.nextQuestion()
                         }
@@ -183,10 +183,14 @@ class JournallingFragment(val previousFragment: Fragment, val filmFile: File, va
     }
     companion object {
         val QUESTIONS = arrayOf(
-            "How are you today?",
-            "What is your favorite color?",
-            "Which is fastest: an african or a european swallow?"
+            "On a scale from 0-10 how are you feeling today?",
+            "Are you ready to start your journal entry for the day?",
+            "Can you summarize that into roughly two sentences?",
+            "Can you tell me three things that you were happy about today?",
+            "Did you go for a walk today?",
+            "Thanks for your answers, see you tomorrow"
         )
+
         @JvmStatic
         fun newInstance(previousFragment: Fragment, file: File, id: Int, onUpdate: () -> Unit) =
             JournallingFragment(previousFragment, file, id, onUpdate)
