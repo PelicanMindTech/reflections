@@ -26,8 +26,8 @@ Check out our Junction 2020 pitch:
 [![Reflections](http://img.youtube.com/vi/yVTdhqVVGnI/0.jpg)](https://www.youtube.com/watch?v=yVTdhqVVGnI "Reflections app")
 
 ## App Screenshots and Interaction Flow
-<img src="docs/Journaling\ interface.png" width="600">
-<img src="docs/Reflections\ interface.png" width="600">
+<img src="docs/Journaling interface.png" width="800">
+<img src="docs/Reflections Interface.png" width="800">
 
 The landing screen is the **Journal** screen, which lists current diary entries. The squares corresponding to each of the items represent the extracted facial sentiment analysis (represented by a score and color intensity):
 
