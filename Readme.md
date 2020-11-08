@@ -21,9 +21,13 @@ The current prototype was written during the Junction
 2020-hackathon. None of the team had any previous Android development
 experience.
 
-Check out our Junction 2020 pitch: 
+Check out our **Junction 2020 Pitch video**: 
 
-[![Reflections](http://img.youtube.com/vi/yVTdhqVVGnI/0.jpg)](https://www.youtube.com/watch?v=yVTdhqVVGnI "Reflections app")
+[![Reflections pitch](http://img.youtube.com/vi/yVTdhqVVGnI/0.jpg)](https://www.youtube.com/watch?v=yVTdhqVVGnI "Reflections app")
+
+And a brief **demo of the app**:
+
+[![Reflections demo](http://img.youtube.com/vi/WyFpJkbM6B4/0.jpg)](https://www.youtube.com/watch?v=WyFpJkbM6B4 "Reflections app")
 
 ## App Screenshots and Interaction Flow
 <img src="docs/Journaling interface.png" width="800">
