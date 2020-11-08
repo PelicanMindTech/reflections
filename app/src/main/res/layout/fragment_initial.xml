@@ -20,15 +20,15 @@
     
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/exoplayerview_activity_video"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="50dp"
-        android:isScrollContainer="true"
         controller_layout_id="@layout/custom_playback_control_minimal"
         default_artwork="@drawable/loading"
         fastforward_increment="1000"
         rewind_increment="1000"
         show_timeout="5000"
-        use_artwork="true" />
-
+        use_artwork="true"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="50dp"
+        android:isScrollContainer="true"
+        android:translationY="400dp" />
 </FrameLayout>

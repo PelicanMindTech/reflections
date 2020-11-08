@@ -1,7 +1,8 @@
 package com.paulaslab.reflections
 
 import android.annotation.SuppressLint
-import android.os.Bundle
+import android.media.MediaDescription
+import android.media.session.MediaSession
 import android.os.Handler
 import android.util.Log
 import android.net.Uri
@@ -14,8 +15,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -34,16 +33,16 @@ import org.jetbrains.anko.view
  * create an instance of this fragment.
  */
 class InitialFragment : Fragment(), AnkoLogger {
+    private var mediaCatalog: List<MediaSessionCompat.QueueItem> = listOf()
     var recyclerView: RecyclerView? = null
 
     private val mediaSession: MediaSessionCompat by lazy { createMediaSession() }
     private val mediaSessionConnector: MediaSessionConnector by lazy {
         createMediaSessionConnector()
     }
+
     private val playerState by lazy { PlayerState() }
     private lateinit var playerHolder: PlayerHolder
-
-    var mediaCatalog: List<MediaDescriptionCompat> = listOf()
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
@@ -57,6 +56,7 @@ class InitialFragment : Fragment(), AnkoLogger {
 
         app.journalStore!!.getEntryFile(0)
         val handler = Handler(context!!.mainLooper)
+
         val journallingFragment = JournallingFragment.newInstance(
             this,
             file,
@@ -77,9 +77,6 @@ class InitialFragment : Fragment(), AnkoLogger {
         )
 
         //app.journalStore?.listFiles()
-        playVideoEntry(app, 1)
-
-        val journallingFragment = JournallingFragment.newInstance(this, file, id)
 
         val view = inflater.inflate(R.layout.fragment_initial, container, false)
 
@@ -98,29 +95,33 @@ class InitialFragment : Fragment(), AnkoLogger {
         // set up the RecyclerView
         recyclerView = view.findViewById<RecyclerView>(R.id.diary_entry_container)
         recyclerView?.layoutManager = LinearLayoutManager(context)
-        val adapter = DiaryEntryRow(context!!, app.journalStore!!)
+        val adapter = DiaryEntryRow(context!!, app.journalStore!!, { id -> playVideoEntry(app, id) })
         recyclerView?.adapter = adapter
-        
+
         createMediaSession()
         createPlayer(view)
 
+        playVideoEntry(app, 53)
         return view
     }
 
 
     private fun playVideoEntry(app: ReflectionsApp, id: Int) {
         // Assuming here that we actually have some files
-        val videofile = app.journalStore?.getEntryFile(id)
-        mediaCatalog = listOf(
-                with(MediaDescriptionCompat.Builder()) {
-                    setDescription("journal entry")
-                    setMediaId("1")
-                    setMediaUri(videofile!!.toUri())
-                    setTitle("Short film")
-                    setSubtitle("Local video")
-                    build()
-                }
-        )
+        val journalStore = app.journalStore!!
+
+        val queue = ArrayList<MediaSessionCompat.QueueItem>()
+        val builder = MediaDescriptionCompat.Builder()
+        builder.setDescription("Yadayada!")
+        builder.setMediaId(id.toString())
+        builder.setMediaUri(journalStore.getEntryFile(id).toUri())
+        builder.setTitle("Short film")
+        val mediaDescriptor = builder.build()
+
+        queue.add(MediaSessionCompat.QueueItem(mediaDescriptor, 1))
+        mediaSession.setQueue(queue)
+        mediaCatalog = queue
+        playerHolder.start(mediaCatalog.map { m -> m.description})
     }
 
     override fun onStart() {
@@ -151,16 +152,7 @@ class InitialFragment : Fragment(), AnkoLogger {
     private fun createMediaSession(): MediaSessionCompat = MediaSessionCompat(this.context, "InitialFragment")
 
     private fun createMediaSessionConnector(): MediaSessionConnector =
-            MediaSessionConnector(mediaSession).apply {
-                // If QueueNavigator isn't set, then mediaSessionConnector will not handle following
-                // MediaSession actions (and they won't show up in the minimized PIP activity):
-                // [ACTION_SKIP_PREVIOUS], [ACTION_SKIP_NEXT], [ACTION_SKIP_TO_QUEUE_ITEM]
-                setQueueNavigator(object : TimelineQueueNavigator(mediaSession) {
-                    override fun getMediaDescription(windowIndex: Int): MediaDescriptionCompat {
-                        return mediaCatalog[windowIndex]
-                    }
-                })
-            }
+            MediaSessionConnector(mediaSession)
 
 
     // MediaSession related functions.
@@ -188,7 +180,7 @@ class InitialFragment : Fragment(), AnkoLogger {
     }
 
     private fun startPlayer() {
-        playerHolder.start(mediaCatalog)
+        playerHolder.start(mediaCatalog.map { m -> m.description})
     }
 
     private fun stopPlayer() {
