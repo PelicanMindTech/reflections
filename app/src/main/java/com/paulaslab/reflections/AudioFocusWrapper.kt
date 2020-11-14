@@ -107,7 +107,7 @@ class AudioFocusWrapper(private val audioAttributes: AudioAttributes,
     @TargetApi(Build.VERSION_CODES.O)
     private fun buildFocusRequest(): AudioFocusRequest =
             AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                    .setAudioAttributes(audioAttributes as AudioAttributes)
+                    .setAudioAttributes(audioAttributes)
                     .setOnAudioFocusChangeListener(audioFocusListener)
                     .build()
 }

@@ -65,6 +65,10 @@ class JournallingStore(val context: Context) {
     fun getHumorFile(id: Int): File =
         File("${basePath}${File.pathSeparator}${id}${File.pathSeparator}humor.json")
 
+    fun getAudioFile(id: Int): File =
+        File("${basePath}${File.pathSeparator}${id}${File.pathSeparator}audio.pcm")
+
+
     private fun mapLikelihood(likelihood: String): Int? {
         when (likelihood) {
             "VERY_UNLIKELY" -> return 0
@@ -193,6 +197,35 @@ class JournallingStore(val context: Context) {
 
         getHumorFile(id).writeText(Gson().toJson(judgments), Charset.forName("UTF-8"))
         Log.i("FUNNY", "HUMOR: ${extractHumor(id)}")
+
+
+        // an extra step...
+        extractText(id)
+    }
+
+    fun extractText(id: Int) {
+        val videoFile = getEntryFile(id)
+        if (!videoFile.exists()) return
+
+        val audioFile = getAudioFile(id)
+
+        // prepare: extract audio from videofile
+        val thread = AudioFromVideo(context,
+                video = videoFile.absolutePath,
+                audio = audioFile.absolutePath
+        ).start()
+
+        Log.i("AUDIOOOOO", "Started audio extraction.")
+
+        // send audio to speech to text
+
+        //getHumorFile(id).writeText(Gson().toJson(judgments), Charset.forName("UTF-8"))
+        //Log.i("FUNNY", "HUMOR: ${extractHumor(id)}")
+
+        // send text to sentiment analysis
+
+        //getHumorFile(id).writeText(Gson().toJson(judgments), Charset.forName("UTF-8"))
+        //Log.i("FUNNY", "HUMOR: ${extractHumor(id)}")
     }
 
     private fun prepareFaceRequest(vararg bitmaps: Bitmap): Annotate? {
